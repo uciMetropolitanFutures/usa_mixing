@@ -22,15 +22,16 @@ shinyUI(fluidPage(
       selectInput("year", label=NULL,
                   choices=list("", "1990", "2000", "2012"), selected="2012"),
       br(),
-      p(strong("Notes:")),
+      p(strong("Data Notes:")),
       textOutput("var_desc"),
       br(),
       br(),
-      div("UCI's Metropolitan Futures Initiative", style="color:blue"),
+      a("UCI's Metropolitan Futures Initiative", href="http://socialecology.uci.edu/mfi"),
+      #div("UCI's Metropolitan Futures Initiative", style="color:blue"),
       img(src="mfi.jpg", height=250, width=250)
     ),
     mainPanel(
-      h2("Southern California Census Tracts"),
+      h2("Orange County, California Census Tracts"),
       p(em("Values of mixing are displayed below. Darker colors generally indicate an area is more mixed.")),
       leafletOutput('myMap', height = 600, width = 900)
     )

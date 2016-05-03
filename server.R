@@ -9,27 +9,26 @@ dftr = data.frame(tr)
 zips <- read.csv("ZIP_centroids.csv")
 
 descr = data.frame(c("Age", "Race", "Income", "Education", "Housing Type", "Housing Age", "Land Use"),
-                   c("mixing is derived from four categories: 0-19, 20-34, 35-64, and 65+",
-                     "mixing is derived from five categories: white, black, hispanic, asian, and other",
-                     "mixing is from five categories of household-income: ",
-                     "mixing is derived from 5 categories of education levels for people above 25:",
-                     "mixing represents single-family attached, single-family detached, multifamily, and other unit types",
-                     "mixing is derived from four or five time periods of about 20 years, starting with pre-1939",
-                     "mixing is from the SCAG: single-family residential, multifamily residential, commercial, industrial, and vacant/open space."))
+                   c("mixing is derived from four categories from the US Census: 0-19, 20-34, 35-64, and 65+ years.",
+                     "mixing is derived from five categories from the US Census: white, black, hispanic, asian, and other/mixed/undefined.",
+                     "mixing is from five categories of household median annual income from the US Census: <$15k, $15k-$35k, $35k-$75k, $75k-$150k, >$150k",
+                     "mixing is derived from 5 categories of education levels for people above 25 from the US Census: no high school diploma, high school diploma, some college, Bachelor's degree, graduate degree.",
+                     "mixing, from the US Census, represents single-family attached, single-family detached, multifamily, and other unit types",
+                     "mixing is derived from the US Census' measure of housing age and is in 4-5 (approximately) 20-year increments depending on the year selected above.",
+                     "mixing is from the Southern California Association of Governments (SCAG): single-family residential, multifamily residential, commercial, industrial, and vacant/open space."))
 colnames(descr) = c("var", "explain")
 
 
 shinyServer(function(input, output) {
-  
-    
+
+  m = leaflet() %>%  setView(lng=-117.8414, lat=33.647 , zoom=12) %>% addTiles() %>%
+    addPolylines(data=tr, stroke=TRUE, weight=0.75, color="black", fill=FALSE)
   
   finalMap <- reactive ({
     
-    ycoord = zips$x_centr[zips$CODE==input$zip]
-    xcoord = zips$y_centr[zips$CODE==input$zip]
-    
-    m = leaflet() %>%  setView(lng=-117.8414, lat=33.647 , zoom=12) %>% addTiles() %>%
-      addPolylines(data=tr, stroke=TRUE, weight=0.75, color="black", fill=FALSE)
+    #xcoord = zips$x_centr[zips$CODE==input$zip]
+    #ycoord = zips$y_centr[zips$CODE==input$zip]
+    #if(input$recenter) return(m %>% setView(lng=xcoord, lat=ycoord, zoom=14)) 
     
     if(input$variable=="Age" & input$year=="1990") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Greys", ageEnt90)(ageEnt90)))
     if(input$variable=="Age" & input$year=="2000") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Greys", ageEnt00)(ageEnt00)))
@@ -72,7 +71,7 @@ shinyServer(function(input, output) {
                        "Education"= descr$explain[descr$var=="Education"],
                        "Housing Type"= descr$explain[descr$var=="Housing Type"],
                        "Housing Age"= descr$explain[descr$var=="Housing Age"],
-                       "Land Use"= descr$explain[descr$var=="Land  Use"]
+                       "Land Use"= descr$explain[descr$var=="Land Use"]
                        )
     paste(input$variable, data_link)
   })
