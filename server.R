@@ -21,48 +21,34 @@ colnames(descr) = c("var", "explain")
 
 shinyServer(function(input, output) {
 
-  m = leaflet() %>%  setView(lng=-117.8414, lat=33.647 , zoom=12) %>% addTiles() %>%
-    addPolylines(data=tr, stroke=TRUE, weight=0.75, color="black", fill=FALSE)
-  
-  finalMap <- reactive ({
-    
-    #xcoord = zips$x_centr[zips$CODE==input$zip]
-    #ycoord = zips$y_centr[zips$CODE==input$zip]
-    #if(input$recenter) return(m %>% setView(lng=xcoord, lat=ycoord, zoom=14)) 
-    
-    if(input$variable=="Age" & input$year=="1990") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Greys", ageEnt90)(ageEnt90)))
-    if(input$variable=="Age" & input$year=="2000") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Greys", ageEnt00)(ageEnt00)))
-    if(input$variable=="Age" & input$year=="2012") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Greys", ageEnt12)(ageEnt12)))
-    
-    if(input$variable=="Race" & input$year=="1990") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("YlOrRd", raceEnt90)(raceEnt90)))
-    if(input$variable=="Race" & input$year=="2000") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("YlOrRd", raceEnt00)(raceEnt00)))
-    if(input$variable=="Race" & input$year=="2012") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("YlOrRd", raceEnt12)(raceEnt12)))
-    
-    if(input$variable=="Income" & input$year=="1990") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("RdGy", incEnt90)(incEnt90)))
-    if(input$variable=="Income" & input$year=="2000") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("RdGy", incEnt00)(incEnt00)))
-    if(input$variable=="Income" & input$year=="2012") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("RdGy", incEnt12)(incEnt12)))
-    
-    if(input$variable=="Education" & input$year=="1990") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Blues", eduEnt90)(eduEnt90)))
-    if(input$variable=="Education" & input$year=="2000") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Blues", eduEnt00)(eduEnt00)))
-    if(input$variable=="Education" & input$year=="2012") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Blues", eduEnt12)(eduEnt12)))
-    
-    if(input$variable=="Housing Type" & input$year=="1990") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Greys", htEnt90)(htEnt90)))
-    if(input$variable=="Housing Type" & input$year=="2000") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Greys", htEnt00)(htEnt00)))
-    if(input$variable=="Housing Type" & input$year=="2012") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("Greys", htEnt12)(htEnt12)))
-    
-    if(input$variable=="Housing Age" & input$year=="1990") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("BrBG", homeEnt90)(homeEnt90)))
-    if(input$variable=="Housing Age" & input$year=="2000") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("BrBG", homeEnt00)(homeEnt00)))
-    if(input$variable=="Housing Age" & input$year=="2012") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("BrBG", homeEnt12)(homeEnt12)))
-    
-    if(input$variable=="Land Use" & input$year=="1990") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("PuOr", LUent9)(LUent9)))
-    if(input$variable=="Land Use" & input$year=="2000") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("PuOr", LUent0)(LUent0)))
-    if(input$variable=="Land Use" & input$year=="2012") return(m %>% addPolygons(data=tr, stroke=F, color = ~colorQuantile("PuOr", LUent12)(LUent12)))
-    
-    else return (m)
+  # Grab ZIP code input
+  center <- reactiveValues(xcoord=-117.8414, ycoord=33.647)
+  observeEvent(input$recenter, {
+    center$xcoord = zips$x_centr[zips$CODE==input$zip]
+    center$ycoord = zips$y_centr[zips$CODE==input$zip]
   })
   
+  # Grab Variable and Year input
+  options = reactiveValues(choose="ageEnt90")
+  observeEvent(input$go, {
+    name_link = switch(input$variable, "Age"="ageEnt", "Race"="raceEnt", "Income"="incEnt", 
+                       "Education"="eduEnt", "Housing Type"="htEnt", "Housing Age"="homeEnt", "Land Use"="LUent")
+    options$choose = paste(name_link, substr(input$year,3,4), sep="")
+  })
+  
+  finalMap <- reactive ({
+    # Define values to list as "choice"  
+    choice = dftr[,grep(options$choose, colnames(dftr))]
+    # Create map as 'm'
+    m = leaflet(tr) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=12) %>% addTiles() %>%
+    addPolylines(stroke=TRUE, weight=0.75, color="black", fill=FALSE) %>%
+    addPolygons(stroke=F, color = ~colorQuantile("Greys", choice)(choice))
+  })
+  
+  # Generate Map Output
   output$myMap = renderLeaflet(finalMap())
   
+  # Add Variable Descriptions
   output$var_desc <- renderText({
     data_link = switch(input$variable,
                        "Age" = descr$explain[descr$var=="Age"],
