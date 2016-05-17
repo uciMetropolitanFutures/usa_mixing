@@ -1,6 +1,6 @@
 library(shiny)
 library(leaflet)
-library(rgdal)
+#library(rgdal)
 library(sp)
 library(maptools)
 #library(rsconnect)
