@@ -1,10 +1,12 @@
 library(shiny)
 library(leaflet)
-#library(rgdal)
+library(rgdal)
 library(sp)
+library(maptools)
 #library(rsconnect)
 
-tr <- readOGR("OC_tr.json", "OGRGeoJSON")
+#tr <- readOGR("OC_tr.json", "OGRGeoJSON")
+tr <- readShapePoly("OC_tr")
 dftr = data.frame(tr)
 zips <- read.csv("ZIP_centroids.csv")
 
