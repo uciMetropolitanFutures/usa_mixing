@@ -1,8 +1,8 @@
 library(shiny)
 library(leaflet)
-library(rgdal)
+#library(rgdal)
 library(sp)
-library(rsconnect)
+#library(rsconnect)
 
 #leafletOutput("map")
 
