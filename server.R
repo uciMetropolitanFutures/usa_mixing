@@ -1,8 +1,8 @@
 library(shiny)
 library(leaflet)
-library(rgdal)
+#library(rgdal)
 library(sp)
-library(rsconnect)
+#library(rsconnect)
 
 tr <- readOGR("OC_tr.json", "OGRGeoJSON")
 dftr = data.frame(tr)
