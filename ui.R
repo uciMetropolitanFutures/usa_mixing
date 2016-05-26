@@ -30,13 +30,16 @@ shinyUI(tabPanel("Employment Centers in Southern California", div(class="outer",
                                                                                                  
                                                                                                  conditionalPanel("input.cstopic == 'Employment' | input.cstopic == 'Specialization' ",
                                                                                                                   selectInput("cstype", label= "Select Category", selected="Industrial",
-                                                                                                                              choices = list("Highest Category", "Total", "Business Services (KIBS)", "Creative Class", "Retail", "High Tech", "Industrial"))),
+                                                                                                                              choices = list("Highest Category", "Total", "Business Services (KIBS)", "Creative Class", "Retail", "High Tech", "Industrial")),
+                                                                                                                  actionButton("csgo", label="Go"))),
                                                               
-                                                                                                 actionButton("csgo", label="Go")),
-                                                                                
+                                                                                                 
                                                                                 conditionalPanel("input.year == 'Change Over 1997-2014' ",
                                                                                                  selectInput("change", label="Choose Analysis", selected="",
-                                                                                                            choices = list("", "Subcenters by Boundary Change", "Subcenters by Status", "Subcenters by Persistence Score")))
+                                                                                                            choices = list("", "Subcenters by Boundary Change", "Subcenters by Status", "Subcenters by Persistence Score")),
+                                                                                                 actionButton("longo", label="Go"))
+                                                                                
+                                                                                                
                                                                   )
 )))
 
