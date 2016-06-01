@@ -3,9 +3,7 @@ library(leaflet)
 library(sp)
 library(maptools)
 
-sub <- readShapePoly("subctr60")
-dfsub <- data.frame(sub)
-dfsub[dfsub==0] = NA
+sub_list = c('Beverly Hills/West Hollywood', 'San Bernardino', 'Burbank/LA 2', 'Lake Arrowhead', 'Palm Springs', 'Anaheim', 'Corona', 'Santa Paula', 'Adelanto', 'Rancho Cucamonga', 'Chino', 'Santa Fe Springs', 'Temecula', 'Torrance', 'Pasadena', 'Glendale', 'DTLA', 'Riverside', 'Malibu', 'Burbank/LA 1', 'South El Monte', 'Perris', 'Oxnard', 'Needles', 'Hawthorne', 'San Fernando Valley 1', 'Victorville', 'Banning', 'Covina', 'City of Industry', 'Yucaipa', 'Menifee', 'Downey', 'Moreno Valley', 'Riverside SW', 'Lake Elsinore SE', 'Pinon Hills', 'Barstow', 'Santa Clarita', 'Dana Point', 'Thousand Oaks', 'Montclair', 'Lancaster', 'Lake Elsinore', 'Yucca Valley', 'Palm Desert', 'Blythe', 'Ventura', 'Ojai', 'Fillmore', 'Hemet', 'Palmdale', 'Big Bear Lake', 'Simi Valley', 'El Segundo', 'San Fernando Valley 2', 'Camarillo', 'Long Beach', 'Irvine/Lake Forest', 'Irvine/SNA')
 
 shinyUI(tabPanel("Employment Centers in Southern California", div(class="outer",
                                                               
@@ -39,7 +37,7 @@ shinyUI(tabPanel("Employment Centers in Southern California", div(class="outer",
 
                                               conditionalPanel("input.cstype != 'Highest Category' & (input.year == '1997' | input.year == '2014')",
                                                                selectInput("ctr", label=em("Select Subcenter for Detail"), selected="DTLA",
-                                                                           choices = as.list(as.character(dfsub$subctrNAME)))),
+                                                                           choices = sub_list)),
                                                                                             
                                               conditionalPanel("input.year == 'Change Over 1997-2014' ",
                                                               selectInput("change", label="Choose Analysis", selected="",
