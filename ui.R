@@ -3,6 +3,10 @@ library(leaflet)
 library(sp)
 library(maptools)
 
+sub <- readShapePoly("subctr60")
+dfsub <- data.frame(sub)
+dfsub[dfsub==0] = NA
+
 shinyUI(tabPanel("Employment Centers in Southern California", div(class="outer",
                                                               
                   tags$head(
