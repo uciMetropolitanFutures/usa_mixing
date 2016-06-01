@@ -12,7 +12,7 @@ zips <- read.csv("ZIP_centroids.csv")
 shinyServer(function(input, output) {
 
   # Grab ZIP code input
-  center <- reactiveValues(xcoord=-117.8414, ycoord=33.647)
+  center <- reactiveValues(xcoord=-118.2386, ycoord=34.06583)
   observeEvent(input$recenter, {
     center$xcoord = zips$x_centr[zips$CODE==input$zip]
     center$ycoord = zips$y_centr[zips$CODE==input$zip]
@@ -36,7 +36,7 @@ shinyServer(function(input, output) {
   })
   
   # Grab Inputs - Longitudinal
-  options3 = reactiveValues(choose="persistenc")
+  options3 = reactiveValues(choose="status")
   observeEvent(input$longo,{
     long_link = switch(input$change, "Subcenters by Boundary Change"="bound", "Subcenters by Status"="status", "Subcenters by Persistence Score"="persistenc")
     options3$choose = long_link
@@ -50,17 +50,43 @@ shinyServer(function(input, output) {
   })
   
   finalMap <- reactive ({
-    if(input$year=="Changes Over 1997-2014"){choice=dfsub[,grep(options3$choose, colnames(dfsub))]} else {choice = dfsub[,grep(options$choose, colnames(dfsub))]} 
-    if(options2$choose=="qual" | options4$choose=="qual"){col=~colorFactor("RdYlBu", choice)(choice)} else {col=~colorQuantile("Blues", choice, na.color="#B0171F")(choice)}
+  
+    # Conditional Inputs
+    if(input$year=="Changes Over 1997-2014"){choice = dfsub[,grep(options3$choose, colnames(dfsub))]} 
+      else {choice = dfsub[,grep(options$choose, colnames(dfsub))]} 
+    
+    if(options2$choose=="qual" | options4$choose=="qual"){pal <- colorFactor("RdYlBu", choice, na.color="#FFFFFF")} 
+      else {pal <- colorNumeric("Blues", choice, na.color="#B0171F")}
+    
     # Create map as 'm'
     m = leaflet(sub) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=10) %>% addTiles() %>%
     addPolylines(stroke=TRUE, weight=2, color="black", fill=FALSE)  %>%
-    addPolygons(stroke=F, color = col) 
+    addPolygons(stroke=F, color = ~pal(choice), popup=~subctrNAME) %>%
+    addLegend("bottomleft", pal=pal, values=~choice, opacity=0.5, 
+              title=~paste(input$year, input$cstype, input$cstopic, sep=" "))
   })
   
   # Generate Map Output
   output$myMap = renderLeaflet(finalMap())
   
+  # Generate Histogram
+  observeEvent(input$csgo, {
+  output$hist <- renderPlot({
+    if(options2$choose=="qual" | options4$choose=="qual" | input$year=="Changes Over 1997-2014"){return(NULL)} 
+    else{ 
+    data = dfsub[,grep(options$choose, colnames(dfsub))]
+    hist(data, xlab=NULL, breaks=10, col="orange",
+         ylab="# of Subcenters", border="white", main=paste(input$year, input$cstype, input$cstopic, sep=" "))
+    legend("topright", c(input$ctr), lwd=2, box.col="white")
+    if(input$cstopic=="Specialization"){
+      abline(v=1, lty=2)
+      legend("topright", c(input$ctr, "1.0"), lwd=c(2,1), lty=c(1,2), box.col="white")}
+    if(input$cstopic=="Employment"){
+      abline(v=mean(data, na.rm=T), lty=2)
+      legend("topright", c(input$ctr, "Subctr Avg"), lwd=c(2,1), lty=c(1,2), box.col="white")}
+    abline(v=dfsub[,grep(options$choose, colnames(dfsub))][dfsub$subctrNAME==input$ctr], lwd=2) }
+  })
+  })
 
 })
 
