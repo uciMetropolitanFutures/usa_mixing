@@ -4,7 +4,7 @@ library(sp)
 library(maptools)
 
 sub <- readShapePoly("subctr60")
-dfsub = data.frame(sub)
+dfsub <- data.frame(sub)
 dfsub[dfsub==0] = NA
 zips <- read.csv("ZIP_centroids.csv")
 
