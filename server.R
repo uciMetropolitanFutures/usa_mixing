@@ -21,7 +21,7 @@ shinyServer(function(input, output) {
   # Grab Inputs - Cross-Sectional
   options = reactiveValues(choose="Em_all_14")
   observeEvent(input$csgo, {
-    type_link = switch(input$cstype, "Highest Category"="_max_", "Total"="_all_", "Business Services (KIBS)"="_kibs_",
+    type_link = switch(input$cstype, "Highest Category"="_max_", "Total"="_all_", "KIBS"="_kibs_",
                        "Creative Class"="_crtv_", "Retail"="_ret_", "High Tech"="_tech_", "Industrial"="_ind_")
     
     options$choose = paste(substr(input$cstopic,1,2), type_link, substr(input$year,3,4), sep="")
@@ -30,7 +30,7 @@ shinyServer(function(input, output) {
   # Grab whether qual or quant - Cross-Sectional
   options2 = reactiveValues(choose="quant")
   observeEvent(input$csgo, {
-    link = switch(input$cstype, "Highest Category"="qual", "Total"="quant", "Business Services (KIBS)"="quant",
+    link = switch(input$cstype, "Highest Category"="qual", "Total"="quant", "KIBS"="quant",
                        "Creative Class"="quant", "Retail"="quant", "High Tech"="quant", "Industrial"="quant")
     options2$choose = link
   })
@@ -62,8 +62,8 @@ shinyServer(function(input, output) {
     m = leaflet(sub) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=10) %>% addTiles() %>%
     addPolylines(stroke=TRUE, weight=2, color="black", fill=FALSE)  %>%
     addPolygons(stroke=F, color = ~pal(choice), popup=~subctrNAME) %>%
-    addLegend("bottomleft", pal=pal, values=~choice, opacity=0.5, 
-              title=~paste(input$year, input$cstype, input$cstopic, sep=" "))
+    addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75, 
+              title=~paste(input$year, input$cstype, input$cstopic, sep=" ")) 
   })
   
   # Generate Map Output
@@ -88,5 +88,26 @@ shinyServer(function(input, output) {
   })
   })
 
+  # Add Topic Descriptions
+  output$var_desc <- renderText({
+    data_notes = switch(input$cstopic,
+                       "Employment" = "is the total number of employees in the subcenter.",
+                       "Specialization"= "displays the selected category's location quotient in each subcenter. A value above 1 indicates a high concentration of that industry relative to the whole region. TOTAL cannot be selected.")
+    paste("-- ", input$cstopic, data_notes, sep=" ")
+  })
+  
+  # Add Variable Description
+  output$var_desc2 <- renderText({
+    data_notes = switch(input$cstype,
+                        "High Tech" = "is ...",
+                        "KIBS"= "stands for Knowledge-Intensive Business Services and...",
+                        "Creative Class" = "is ...",
+                        "Retail" = "is ...",
+                        "Industrial" = "is ...",
+                        "Total" = "cannot be selected for SPECIALIZATION",
+                        "Highest Category"= "is the industry (of the 5 options shown) with the highest employment or location quotient in each subcenter.")
+    paste("-- ", input$cstype, data_notes, sep=" ")
+  })
+  
 })
 

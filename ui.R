@@ -3,8 +3,8 @@ library(leaflet)
 library(sp)
 library(maptools)
 
-sub_list = c('Beverly Hills/West Hollywood', 'San Bernardino', 'Burbank/LA 2', 'Lake Arrowhead', 'Palm Springs', 'Anaheim', 'Corona', 'Santa Paula', 'Adelanto', 'Rancho Cucamonga', 'Chino', 'Santa Fe Springs', 'Temecula', 'Torrance', 'Pasadena', 'Glendale', 'DTLA', 'Riverside', 'Malibu', 'Burbank/LA 1', 'South El Monte', 'Perris', 'Oxnard', 'Needles', 'Hawthorne', 'San Fernando Valley 1', 'Victorville', 'Banning', 'Covina', 'City of Industry', 'Yucaipa', 'Menifee', 'Downey', 'Moreno Valley', 'Riverside SW', 'Lake Elsinore SE', 'Pinon Hills', 'Barstow', 'Santa Clarita', 'Dana Point', 'Thousand Oaks', 'Montclair', 'Lancaster', 'Lake Elsinore', 'Yucca Valley', 'Palm Desert', 'Blythe', 'Ventura', 'Ojai', 'Fillmore', 'Hemet', 'Palmdale', 'Big Bear Lake', 'Simi Valley', 'El Segundo', 'San Fernando Valley 2', 'Camarillo', 'Long Beach', 'Irvine/Lake Forest', 'Irvine/SNA')
 
+sub_list = c('Adelanto',  'Anaheim',  'Banning',  'Barstow', 'Beverly Hills/West Hollywood',  'Big Bear Lake',  'Blythe',  'Burbank/LA 1',  'Burbank/LA 2',  'Camarillo',  'Chino',  'City of Industry',  'Corona',  'Covina',  'Dana Point',  'Downey',  'DTLA',  'El Segundo',  'Fillmore',  'Glendale',  'Hawthorne',  'Hemet',  'Irvine/Lake Forest',  'Irvine/SNA',  'Lake Arrowhead',  'Lake Elsinore',  'Lake Elsinore SE',  'Lancaster',  'Long Beach',  'Malibu',  'Menifee',  'Montclair',  'Moreno Valley',  'Needles',  'Ojai',  'Oxnard',  'Palm Desert',  'Palm Springs',  'Palmdale',  'Pasadena',  'Perris',  'Pinon Hills',  'Rancho Cucamonga',  'Riverside',  'Riverside SW',  'San Bernardino',  'San Fernando Valley 1',  'San Fernando Valley 2',  'Santa Clarita',  'Santa Fe Springs',  'Santa Paula',  'Simi Valley',  'South El Monte',  'Temecula',  'Thousand Oaks',  'Torrance',  'Ventura',  'Victorville',  'Yucaipa',  'Yucca Valley')
 shinyUI(tabPanel("Employment Centers in Southern California", div(class="outer",
                                                               
                   tags$head(
@@ -32,8 +32,8 @@ shinyUI(tabPanel("Employment Centers in Southern California", div(class="outer",
                                                                                                  
                                               conditionalPanel("input.cstopic == 'Employment' | input.cstopic == 'Specialization' ",
                                                               selectInput("cstype", label= "Select Category", selected="",
-                                                                          choices = list("High Tech", "Business Services (KIBS)", "Creative Class", "Retail", "Industrial", "Total", "Highest Category")),
-                                                              actionButton("csgo", label="Go"))),
+                                                                          choices = list("", "High Tech", "KIBS", "Creative Class", "Retail", "Industrial", "Total", "Highest Category")),
+                                                              actionButton("csgo", label="Go/Refresh"))),
 
                                               conditionalPanel("input.cstype != 'Highest Category' & (input.year == '1997' | input.year == '2014')",
                                                                selectInput("ctr", label=em("Select Subcenter for Detail"), selected="DTLA",
@@ -45,6 +45,14 @@ shinyUI(tabPanel("Employment Centers in Southern California", div(class="outer",
                                                               actionButton("longo", label="Go!")),
                                               # Generate Histogram
                                               plotOutput("hist", height = 225)
-                                              )
+                                              ),
+                              absolutePanel(id = "controls", class="panel panel-default", fixed = TRUE,
+                                            draggable=TRUE, top=110, left=10, right="auto", bottom="auto",
+                                            width=150, height="auto",
+                                            p("Data Notes:"),
+                                            h6("-- NA indicates that the selection does NOT meet the definition of a subcenter in the year indicated."),
+                                            h6(textOutput("var_desc")),
+                                            h6(textOutput("var_desc2"))
+                                            )
 )))
 
