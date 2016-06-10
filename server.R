@@ -8,6 +8,9 @@ dfsub <- data.frame(sub)
 dfsub[dfsub==0] = NA
 zips <- read.csv("ZIP_centroids.csv")
 
+sub97 <- readShapePoly("centers97")
+sub14 <- readShapePoly("centers14")
+
 
 shinyServer(function(input, output) {
 
@@ -58,12 +61,19 @@ shinyServer(function(input, output) {
     if(options2$choose=="qual" | options4$choose=="qual"){pal <- colorFactor("RdYlBu", choice, na.color="#FFFFFF")} 
       else {pal <- colorNumeric("Blues", choice, na.color="#B0171F")}
     
-    # Create map as 'm'
+    # Create map 
     m = leaflet(sub) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=10) %>% addTiles() %>%
-    addPolylines(stroke=TRUE, weight=2, color="black", fill=FALSE)  %>%
-    addPolygons(stroke=F, color = ~pal(choice), popup=~subctrNAME) %>%
+    addPolylines(data=sub, stroke=TRUE, weight=2, color="black", fill=FALSE, group="View Data")  %>%
+    addPolygons(data=sub, stroke=F, color = ~pal(choice), popup=~subctrNAME, group="View Data") %>%
     addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75, 
-              title=~paste(input$year, input$cstype, input$cstopic, sep=" ")) 
+              title=~paste(input$year, input$cstype, input$cstopic, sep=" ")) %>%
+    addPolygons(data=sub97, stroke=F, color = "red", group="View Changes") %>%
+    addPolylines(data=sub97, stroke=TRUE, weight=2, color="black", fill=FALSE, group="View Changes") %>%
+    addPolygons(data=sub14, stroke=F, color = "blue", group="View Changes") %>%
+    addPolylines(data=sub14, stroke=TRUE, weight=2, color="black", fill=FALSE, group="View Changes") %>%
+    addLayersControl(
+      baseGroups = c("View Data", "View Changes"),
+      options = layersControlOptions(collapsed = FALSE))
   })
   
   # Generate Map Output
