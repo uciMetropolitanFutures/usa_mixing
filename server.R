@@ -21,7 +21,7 @@ shinyServer(function(input, output) {
     center$ycoord = zips$y_centr[zips$CODE==input$zip]
   })
   
-  # Grab Inputs - Cross-Sectional
+  # Grab Inputs 
   options = reactiveValues(choose="Em_all_14")
   observeEvent(input$csgo, {
     type_link = switch(input$cstype, "Highest Category"="_max_", "Total"="_all_", "KIBS"="_kibs_",
@@ -30,7 +30,7 @@ shinyServer(function(input, output) {
     options$choose = paste(substr(input$cstopic,1,2), type_link, substr(input$year,3,4), sep="")
   })
 
-  # Grab whether qual or quant - Cross-Sectional
+  # Grab whether qual or quant
   options2 = reactiveValues(choose="quant")
   observeEvent(input$csgo, {
     link = switch(input$cstype, "Highest Category"="qual", "Total"="quant", "KIBS"="quant",
@@ -38,39 +38,19 @@ shinyServer(function(input, output) {
     options2$choose = link
   })
   
-  # Grab Inputs - Longitudinal
-  options3 = reactiveValues(choose="status")
-  observeEvent(input$longo,{
-    long_link = switch(input$change, "Subcenters by Boundary Change"="bound", "Subcenters by Status"="status", "Subcenters by Persistence Score"="persistenc")
-    options3$choose = long_link
-  })
-  
-  # Grab whether qual or quant - Longitudinal
-  options4 = reactiveValues(choose="quant")
-  observeEvent(input$longo, {
-    link = switch(input$change, "Subcenters by Boundary Change"="other", "Subcenters by Status"="qual", "Subcenters by Persistence Score"="quant")
-    options4$choose = link
-  })
-  
   finalMap <- reactive ({
-  
-    # Conditional Inputs
-    if(input$year=="Changes Over 1997-2014"){choice = dfsub[,grep(options3$choose, colnames(dfsub))]} 
-      else {choice = dfsub[,grep(options$choose, colnames(dfsub))]} 
-    
-    if(options2$choose=="qual" | options4$choose=="qual"){pal <- colorFactor("RdYlBu", choice, na.color="#FFFFFF")} 
+    choice = dfsub[,grep(options$choose, colnames(dfsub))]
+    if(options2$choose=="qual"){pal <- colorFactor("RdYlBu", choice, na.color="#FFFFFF")} 
       else {pal <- colorNumeric("Blues", choice, na.color="#B0171F")}
     
     # Create map 
     m = leaflet(sub) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=10) %>% addTiles() %>%
-    addPolylines(data=sub, stroke=TRUE, weight=2, color="black", fill=FALSE, group="View Data")  %>%
-    addPolygons(data=sub, stroke=F, color = ~pal(choice), popup=~subctrNAME, group="View Data") %>%
+    addPolygons(data=sub, stroke=T, weight=1.5, fillColor = ~pal(choice), color="black", fillOpacity=0.6, 
+                opacity=1, popup=~subctrNAME, group="View Data") %>%
     addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75, 
               title=~paste(input$year, input$cstype, input$cstopic, sep=" ")) %>%
-    addPolygons(data=sub97, stroke=F, color = "red", group="View Changes") %>%
-    addPolylines(data=sub97, stroke=TRUE, weight=2, color="black", fill=FALSE, group="View Changes") %>%
-    addPolygons(data=sub14, stroke=F, color = "blue", group="View Changes") %>%
-    addPolylines(data=sub14, stroke=TRUE, weight=2, color="black", fill=FALSE, group="View Changes") %>%
+    addPolygons(data=sub97, stroke=T, weight=1.5, color="black", fillColor="dodgerblue", fillOpacity=0.5, group="View Changes") %>%
+    addPolygons(data=sub14, stroke=T, weight=1.5, color="black", fillColor="yellow", fillOpacity=0.5, group="View Changes") %>%
     addLayersControl(
       baseGroups = c("View Data", "View Changes"),
       options = layersControlOptions(collapsed = FALSE))
@@ -82,19 +62,19 @@ shinyServer(function(input, output) {
   # Generate Histogram
   observeEvent(input$csgo, {
   output$hist <- renderPlot({
-    if(options2$choose=="qual" | options4$choose=="qual" | input$year=="Changes Over 1997-2014"){return(NULL)} 
-    else{ 
+    if(options2$choose=="qual"){return(NULL)}   else{ 
     data = dfsub[,grep(options$choose, colnames(dfsub))]
-    hist(data, xlab=NULL, breaks=10, col="orange",
+    if(input$year == '1997'){ctrselect <- input$ctr97} else {ctrselect <- input$ctr14}
+    hist(data, xlab=NULL, breaks=10, col="dodgerblue",
          ylab="# of Subcenters", border="white", main=paste(input$year, input$cstype, input$cstopic, sep=" "))
-    legend("topright", c(input$ctr), lwd=2, box.col="white")
+    legend("topright", c(ctrselect), lwd=2, box.col="white")
     if(input$cstopic=="Specialization"){
       abline(v=1, lty=2)
-      legend("topright", c(input$ctr, "1.0"), lwd=c(2,1), lty=c(1,2), box.col="white")}
+      legend("topright", c(ctrselect, "1.0"), lwd=c(2,1), lty=c(1,2), box.col="white")}
     if(input$cstopic=="Employment"){
       abline(v=mean(data, na.rm=T), lty=2)
-      legend("topright", c(input$ctr, "Subctr Avg"), lwd=c(2,1), lty=c(1,2), box.col="white")}
-    abline(v=dfsub[,grep(options$choose, colnames(dfsub))][dfsub$subctrNAME==input$ctr], lwd=2) }
+      legend("topright", c(ctrselect, "Subctr Avg"), lwd=c(2,1), lty=c(1,2), box.col="white")}
+    abline(v=dfsub[,grep(options$choose, colnames(dfsub))][dfsub$subctrNAME==ctrselect], lwd=2) }
   })
   })
 
@@ -109,11 +89,11 @@ shinyServer(function(input, output) {
   # Add Variable Description
   output$var_desc2 <- renderText({
     data_notes = switch(input$cstype,
-                        "High Tech" = "is ...",
-                        "KIBS"= "stands for Knowledge-Intensive Business Services and...",
-                        "Creative Class" = "is ...",
-                        "Retail" = "is ...",
-                        "Industrial" = "is ...",
+                        "High Tech" = "spans several industries and includes tech manufacturing.",
+                        "KIBS"= "stands for Knowledge-Intensive Business Services.",
+                        "Creative Class" = "employment consists of arts, entertainment, recreation, and information.",
+                        "Retail" = "selected.",
+                        "Industrial" = "includes manufacturing and utilities.",
                         "Total" = "cannot be selected for SPECIALIZATION",
                         "Highest Category"= "is the industry (of the 5 options shown) with the highest employment or location quotient in each subcenter.")
     paste("-- ", input$cstype, data_notes, sep=" ")
