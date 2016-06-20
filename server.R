@@ -45,7 +45,7 @@ shinyServer(function(input, output) {
     datause = dfch[,grep(options$choose, colnames(dfch))]
     if(input$analysis == 3 | input$analysis == 5){colorpal <- colorFactor("RdYlBu", datause, na.color="#FFFFFF")}
     else if(input$analysis == 4) {colorpal <- colorBin("RdYlBu", datause, bins=c(-1, -0.2, -0.1, 0, 0.1, 0.2, 1), na.color="#B0171F")}
-    else if(input$analysis == 2){colorpal <- colorQuantile("Blues", datause, n=5, na.color="#B0171F")}
+    else if(input$analysis == 2){colorpal <- colorBin("Blues", datause, bins=5, na.color="#B0171F")}
     else if(input$analysis == 1 & (input$emp == "Employment Growth, 2000-2012" | input$emp == "Employment Growth, 1997-2014")) {colorpal <- colorBin("RdYlBu", datause, bins=c(-55000,-2000,-500,0,500,2000,70000), na.color="#FFFFFF")}
     else {colorpal <- colorBin("Blues", datause, bins=c(0,750,2000,5000,15000,100000), na.color="#FFFFFF")}
   })
