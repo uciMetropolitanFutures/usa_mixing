@@ -66,16 +66,19 @@ shinyServer(function(input, output) {
     })
   
   # Generate Histogram
-  observeEvent(input$histgo, {   ### NEED TO FIX THIS
+  observeEvent(input$histgo, {  
     output$hist <- renderPlot({
       if(input$analysis == 5 | input$analysis == 3){return(NULL)}   else{ 
-        datause = city$churn9714
-        hist(datause, xlab=NULL, breaks=30, col="dodgerblue", xlim=c(0.2, 0.7),
-             ylab="# of SoCal Cities", border="white", main="Churning, 1997-2014")
+        datause <- city[,grep(options$choose, colnames(city))]
+        datause[is.na(datause)] = 0
+        q2 = as.numeric(quantile(datause, 0.02))
+        q98 = as.numeric(quantile(datause, 0.98))
+        hist(datause, xlab=NULL, col="dodgerblue", breaks=((max(datause)-min(datause))/(q98-q2))*12, xlim=c(q2, q98),
+             ylab="# of SoCal Cities", border="white", main=options$choose)
         legend("topright", c(input$city), lwd=2, box.col="white")
         abline(v=mean(datause, na.rm=T), lty=2)
         legend("topright", c(input$city, "Avg"), lwd=c(2,1), lty=c(1,2), box.col="white")
-        abline(v=city$churn9714[city$NAME10==input$city], lwd=2)
+        abline(v=city[,grep(options$choose, colnames(city))][city$NAME10==input$city], lwd=2)
         }
     })
   })
