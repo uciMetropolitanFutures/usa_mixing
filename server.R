@@ -1,98 +1,97 @@
+# PLACES # 
+
 library(shiny)
 library(leaflet)
 library(sp)
 library(maptools)
 
-ch <- readShapePoly("trt10_churning_selected")
-dfch <- data.frame(ch)
-city <- read.csv("city_churn_fast.csv")
-zips <- read.csv("ZIP_centroids.csv")
+sub <- readShapePoly("SoCal_place_2010")
+dfsub <- data.frame(sub)
+dfsub[dfsub==0] = NA
+coords <- read.csv("city_coords.csv")
 
 shinyServer(function(input, output) {
   
   # Grab ZIP code input
-  center <- reactiveValues(xcoord=-118.2386, ycoord=34.06583)
+  center <- reactiveValues(xcoord=-117.7736, ycoord=33.67801)
   observeEvent(input$recenter, {
-    center$xcoord = zips$x_centr[zips$CODE==input$zip]
-    center$ycoord = zips$y_centr[zips$CODE==input$zip]
-  })
- 
-  # Grab Inputs - ALL
-  options = reactiveValues(choose="ones")
-  observeEvent(input$empgo, {
-    emplink = switch(input$emp, "Employment in 1997"="1997", "Employment in 2000"="2000", "Employment in 2012"="12",  
-                     "Employment in 2014"="14", "Employment Growth, 1997-2014"="9714", "Employment Growth, 2000-2012"="0012")
-    options$choose = paste("totemp", emplink, sep="")
-  })
-  observeEvent(input$churngo, {
-    churnlink = switch(input$churn, "Churning, 1997-2014"="9714", "Churning, 2000-2012"="0012")
-    options$choose = paste("churn", churnlink, sep="")
-  })
-  observeEvent(input$clustgo, {
-    clustlink = switch(input$clust, "Socioeconomically-derived Clusters"="fac2", "Spatially-derived Clusters"="LISA")
-    options$choose = paste("clust", clustlink, sep="")
-  })
-  observeEvent(input$growgo, {
-    growlink = switch(input$grow, "Churning and Income Growth"="inc", "Churning and Job Growth"="job", "Churning and Home Value Growth"="hov")
-    options$choose = paste("grow", growlink, sep="")
-  })
-  observeEvent(input$clear, {
-    options$choose = "ones"
+    center$xcoord = coords$x_cent[coords$NAME10==input$cent]
+    center$ycoord = coords$y_cent[coords$NAME10==input$cent]
   })
   
-  # Reactive function to generate a color palette based on the variable chosen
-  colorpal <- reactive({
-    datause = dfch[,grep(options$choose, colnames(dfch))]
-    if(input$analysis == 3 | input$analysis == 5){colorpal <- colorFactor("RdYlBu", datause, na.color="#FFFFFF")}
-    else if(input$analysis == 4) {colorpal <- colorBin("RdYlBu", datause, bins=c(-1, -0.2, -0.1, 0, 0.1, 0.2, 1), na.color="#B0171F")}
-    else if(input$analysis == 2){colorpal <- colorBin("Blues", datause, bins=5, na.color="#B0171F")}
-    else if(input$analysis == 1 & (input$emp == "Employment Growth, 2000-2012" | input$emp == "Employment Growth, 1997-2014")) {colorpal <- colorBin("RdYlBu", datause, bins=c(-55000,-2000,-500,0,500,2000,70000), na.color="#FFFFFF")}
-    else {colorpal <- colorBin("Blues", datause, bins=c(0,750,2000,5000,15000,100000), na.color="#FFFFFF")}
+  # Grab Inputs 
+  options = reactiveValues(choose="welcome")
+  observeEvent(input$csgo, {
+    type_link = switch(input$cstype, "Highest Category"="_max_", "Total"="_all_", "KIBS"="_kibs_",
+                       "Creative Class"="_crtv_", "Retail"="_ret_", "High Tech"="_tech_", "Industrial"="_ind_")
+    
+    options$choose = paste(substr(input$cstopic,1,2), type_link, substr(input$year,3,4), sep="")
   })
   
-  # Generate the basemap
-  output$map <- renderLeaflet({
-    leaflet(ch) %>% setView(lng=center$xcoord, lat=center$ycoord , zoom=10) %>% addTiles()
+  # Grab whether qual or quant
+  options2 = reactiveValues(choose="quant")
+  observeEvent(input$csgo, {
+    link = switch(input$cstype, "Highest Category"="qual", "Total"="quant", "KIBS"="quant",
+                  "Creative Class"="quant", "Retail"="quant", "High Tech"="quant", "Industrial"="quant")
+    options2$choose = link
   })
   
-  # Observe function to add polygons and legend to basemap based on color palette 
-  observe({
-    pal <- colorpal()
-    datause <- dfch[,grep(options$choose, colnames(dfch))]
-    leafletProxy("map") %>% clearControls() %>% clearShapes() %>% 
-      addPolygons(data=ch, stroke=T, weight=1, fillColor = ~pal(datause), color="black",
-                  fillOpacity=0.6, opacity=1, popup=~NAME10) %>%
-      addLegend("bottomleft", pal=pal, values=datause, opacity=0.75, title=options$choose)
-    })
+  finalMap <- reactive ({
+    choice = dfsub[,grep(options$choose, colnames(dfsub))]
+    if(options2$choose=="qual" | options$choose=="welcome"){pal <- colorFactor("RdYlBu", choice, na.color="#FFFFFF")}
+    else if(input$cstopic=="Specialization" & options2$choose!="qual"){pal <- colorBin("Blues", choice, bins=c(0, 0.33, 0.66, 1, 1.5, 2, 4, 15), na.color="#B0171F")}
+    else {pal <- colorQuantile("Blues", choice, na.color="#B0171F", n=5)}
+    # Create map 
+    m = leaflet(sub) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=10) %>% addTiles() %>%
+      addPolygons(data=sub, stroke=T, weight=1.1, fillColor = ~pal(choice), color="black", fillOpacity=0.5, 
+                  opacity=1, popup=~NAME10) %>%
+      addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75, 
+                title=~paste(input$year, input$cstype, input$cstopic, sep=" "))
+  })
   
-  # Generate Histogram
-  observeEvent(input$histgo, {  
+  # Generate Map Output
+  output$myMap = renderLeaflet(finalMap())
+
+ # Generate Histogram
+  observeEvent(input$csgo, {
     output$hist <- renderPlot({
-      if(input$analysis == 5 | input$analysis == 3){return(NULL)}   else{ 
-        datause <- city[,grep(options$choose, colnames(city))]
-        datause[is.na(datause)] = 0
-        q2 = as.numeric(quantile(datause, 0.02))
-        q98 = as.numeric(quantile(datause, 0.98))
-        hist(datause, xlab=NULL, col="dodgerblue", breaks=((max(datause)-min(datause))/(q98-q2))*12, xlim=c(q2, q98),
-             ylab="# of SoCal Cities", border="white", main=options$choose)
+      if(input$cstype=="Highest Category"){return(NULL)}   else{ 
+        data = dfsub[,grep(options$choose, colnames(dfsub))]
+        data[is.na(data)] = 0
+        q2 = as.numeric(quantile(data, 0.02))
+        q98 = as.numeric(quantile(data, 0.98))
+        hist(data, xlab=NULL, col="dodgerblue", breaks=((max(data)-min(data))/(q98-q2))*12, xlim=c(q2, q98),
+             ylab="# of Cities", border="white", main=paste(input$year, input$cstype, input$cstopic, sep=" "))
         legend("topright", c(input$city), lwd=2, box.col="white")
-        abline(v=mean(datause, na.rm=T), lty=2)
-        legend("topright", c(input$city, "Avg"), lwd=c(2,1), lty=c(1,2), box.col="white")
-        abline(v=city[,grep(options$choose, colnames(city))][city$NAME10==input$city], lwd=2)
-        }
+        if(input$cstopic=="Specialization"){
+          abline(v=1, lty=2)
+          legend("topright", c(input$city, "1.0"), lwd=c(2,1), lty=c(1,2), box.col="white")}
+        if(input$cstopic=="Employment"){
+          abline(v=mean(data, na.rm=T), lty=2)
+          legend("topright", c(input$city, "Avg"), lwd=c(2,1), lty=c(1,2), box.col="white")}
+        abline(v=dfsub[,grep(options$choose, colnames(dfsub))][dfsub$NAME10==input$city], lwd=2) }
     })
   })
   
-  # Add Descriptions
+  # Add Topic Descriptions
   output$var_desc <- renderText({
-    data_notes = switch(input$analysis,
-                        "1" = "Employment is derived from ReferenceUSA and shows the number of jobs in each tract. Employment growth shows the net increase/decrease in job count per tract (not a percent).",
-                        "2" = "Churning is calculated as the (annualized) sum of business establishment births and deaths divided by total employment. It is a measure of local economic turnover.",
-                        "3" = "Socioeconomic clusters group similarly-churning tracts based on things like income, race, and homeownership into 6 categories. Spatial clusters identify hotspots where nearby tracts display similar levels of churn. You must click CLEAR RESULTS before switching to another analysis.",
-                        "4" = "These are results from a geographically-weighted regression showing how the relationship between churning and growth varies over space. In some areas, churning is associated with growth but in other areas it is associated with decline.")
-    paste("-- ", data_notes, sep="")
+    data_notes = switch(input$cstopic,
+                        "Employment" = "displays each city's employment based on its percentile, compared to cities region-wide.",
+                        "Specialization"= "displays the selected category's location quotient in each city. A value above 1 indicates a high concentration of that industry relative to the whole region. TOTAL cannot be selected.")
+    paste("-- ", input$cstopic, data_notes, sep=" ")
   })
   
+  # Add Variable Description
+  output$var_desc2 <- renderText({
+    data_notes = switch(input$cstype,
+                        "High Tech" = "spans several industries and includes tech manufacturing.",
+                        "KIBS"= "stands for Knowledge-Intensive Business Services.",
+                        "Creative Class" = "employment consists of arts, entertainment, recreation, and information.",
+                        "Retail" = "selected.",
+                        "Industrial" = "includes manufacturing and utilities.",
+                        "Total" = "cannot be selected for SPECIALIZATION",
+                        "Highest Category"= "is the industry (of the 5 options shown) with the highest employment or location quotient in each city.")
+    paste("-- ", input$cstype, data_notes, sep=" ")
+  })
   
- 
 })
