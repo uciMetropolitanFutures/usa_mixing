@@ -5,7 +5,7 @@ library(leaflet)
 library(sp)
 library(maptools)
 
-sub <- readShapePoly("SoCal_place_2010")
+sub <- readShapePoly("SoCal_place_2010_UA")
 dfsub <- data.frame(sub)
 dfsub[dfsub==0] = NA
 coords <- read.csv("city_coords.csv")
