@@ -48,7 +48,7 @@ shinyServer(function(input, output) {
     else if(input$cstopic=="Employment" & input$cstype!="Highest Category"){pal <- colorQuantile("Blues", choice, na.color="#B0171F", n=5)}
     else {pal <- colorFactor("blue", domain=dfsub$welcome)}
     # Create map 
-    m = leaflet(sub) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=10) %>% addTiles() %>%
+    m = leaflet(sub) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=11) %>% addTiles() %>%
       addPolygons(data=sub, stroke=T, weight=1.1, fillColor = ~pal(choice), color="black", fillOpacity=0.5, 
                   opacity=1, popup=~NAME10) %>%
       addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75, na.label=~paste('No', input$cstype, 'Businesses', sep=' '),
