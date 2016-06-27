@@ -20,7 +20,7 @@ shinyServer(function(input, output) {
   })
   
   # Grab Inputs 
-  options = reactiveValues(choose="welcome")
+  options = reactiveValues(choose="Em_all_14")
   observeEvent(input$csgo, {
     type_link = switch(input$cstype, "Highest Category"="_max_", "Total"="_all_", "KIBS"="_kibs_",
                        "Creative Class"="_crtv_", "Retail"="_ret_", "High Tech"="_tech_", "Industrial"="_ind_")
@@ -36,16 +36,22 @@ shinyServer(function(input, output) {
     options2$choose = link
   })
   
+  # Clearing function
+  observeEvent(input$clear, {
+    options$choose = "welcome"
+  })
+  
   finalMap <- reactive ({
     choice = dfsub[,grep(options$choose, colnames(dfsub))]
-    if(options2$choose=="qual" | options$choose=="welcome"){pal <- colorFactor("RdYlBu", choice, na.color="#FFFFFF")}
-    else if(input$cstopic=="Specialization" & options2$choose!="qual"){pal <- colorBin("Blues", choice, bins=c(0, 0.33, 0.66, 1, 1.5, 2, 4, 15), na.color="#B0171F")}
-    else {pal <- colorQuantile("Blues", choice, na.color="#B0171F", n=5)}
+    if(input$cstype=="Highest Category"){pal <- colorFactor("RdYlBu", choice, na.color="#FFFFFF")}
+    else if(input$cstopic=="Specialization" & input$cstype!="Highest Category"){pal <- colorBin("Blues", choice, bins=c(0, 0.33, 0.66, 1, 1.5, 2, 4, 15), na.color="#B0171F")}
+    else if(input$cstopic=="Employment" & input$cstype!="Highest Category"){pal <- colorQuantile("Blues", choice, na.color="#B0171F", n=5)}
+    else {pal <- colorFactor("blue", domain=dfsub$welcome)}
     # Create map 
     m = leaflet(sub) %>%  setView(lng=center$xcoord, lat=center$ycoord , zoom=10) %>% addTiles() %>%
       addPolygons(data=sub, stroke=T, weight=1.1, fillColor = ~pal(choice), color="black", fillOpacity=0.5, 
                   opacity=1, popup=~NAME10) %>%
-      addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75, 
+      addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75, na.label=~paste('No', input$cstype, 'Businesses', sep=' '),
                 title=~paste(input$year, input$cstype, input$cstopic, sep=" "))
   })
   
@@ -53,14 +59,17 @@ shinyServer(function(input, output) {
   output$myMap = renderLeaflet(finalMap())
 
  # Generate Histogram
-  observeEvent(input$csgo, {
+  observeEvent(input$city!=" ", {
     output$hist <- renderPlot({
       if(input$cstype=="Highest Category"){return(NULL)}   else{ 
+        par(mar=c(2.5,4,4,2))
+        par(oma=c(1.5,0,0,0))
         data = dfsub[,grep(options$choose, colnames(dfsub))]
         data[is.na(data)] = 0
-        q2 = as.numeric(quantile(data, 0.02))
-        q98 = as.numeric(quantile(data, 0.98))
-        hist(data, xlab=NULL, col="dodgerblue", breaks=((max(data)-min(data))/(q98-q2))*12, xlim=c(q2, q98),
+        q2 = max(0, as.numeric(quantile(data, 0.02)))
+        q98 = min(as.numeric(quantile(data, 0.98)), 9999999)
+        brks = max(2, ((max(data)-min(data))/(q98-q2))*12)
+        hist(data, col="dodgerblue", breaks=brks, xlim=c(q2, q98), xlab=NULL, 
              ylab="# of Cities", border="white", main=paste(input$year, input$cstype, input$cstopic, sep=" "))
         legend("topright", c(input$city), lwd=2, box.col="white")
         if(input$cstopic=="Specialization"){
@@ -69,9 +78,10 @@ shinyServer(function(input, output) {
         if(input$cstopic=="Employment"){
           abline(v=mean(data, na.rm=T), lty=2)
           legend("topright", c(input$city, "Avg"), lwd=c(2,1), lty=c(1,2), box.col="white")}
-        abline(v=dfsub[,grep(options$choose, colnames(dfsub))][dfsub$NAME10==input$city], lwd=2) }
+        abline(v=dfsub[,grep(options$choose, colnames(dfsub))][dfsub$NAME10==input$city], lwd=2)
+        mtext("Note: cities with very high or low values may not be visible.", side=1, cex=0.85, font=3, outer=TRUE)}
     })
-  })
+  }) 
   
   # Add Topic Descriptions
   output$var_desc <- renderText({
