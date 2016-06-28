@@ -38,7 +38,7 @@ shinyUI(tabPanel("Southern California Employment Centers", div(class="outer",
                                                                              
                                                                              # Generate Histogram
                                                                              plotOutput("hist", height = 225),
-                                                                             h6(em("by the ", a("Metropolitan Futures Initiative", href="http://mfi.soceco.uci.edu", target="_blank"), "at UC-Irvine (2016).  Webmap by ", a("Kevin Kane, PhD", href="http://kevinkane.org", target="_blank")))
+                                                                             h6(em("by the ", a("Metropolitan Futures Initiative", href="http://mfi.soceco.uci.edu", target="_blank"), "at UC-Irvine (2016).  Webmap by ", a("Kevin Kane, PhD", href="http://kevinkane.org", target="_blank"), "and", a("UCI Data Science Initiative", href="http://datascience.uci.edu", target="_blank")))
                                                                ),
                                                                absolutePanel(id = "controls", class="panel panel-default", fixed = TRUE,
                                                                              draggable=TRUE, top=110, left=10, right="auto", bottom="auto",
