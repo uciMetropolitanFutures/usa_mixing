@@ -44,6 +44,7 @@ shinyServer(function(input, output) {
   })
   
   finalMap <- reactive ({
+    withProgress(message='Please Wait: Map Loading', {
     choice = dfsub[,grep(options$choose, colnames(dfsub))]
     if(input$cstype=="Highest Category"){pal <- colorFactor("RdYlBu", choice, na.color="#FFFFFF")}
     else if(input$cstopic=="Specialization" & input$cstype!="Highest Category"){pal <- colorBin("Blues", choice, bins=c(0, 0.33, 0.66, 1, 1.5, 2, 4, 15), na.color="#B0171F")}
@@ -55,6 +56,7 @@ shinyServer(function(input, output) {
                   opacity=1, popup=~NAME10) %>%
       addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75, na.label=~paste('No', input$cstype, 'Businesses', sep=' '),
                 title=~paste(input$year, input$cstype, input$cstopic, sep=" "))
+    })
   })
   
   # Generate Map Output
@@ -121,6 +123,7 @@ shinyServer(function(input, output) {
   })
   # Make map (non-proxy method)
   finalMap2 <- reactive({
+    withProgress(message='Please Wait: Map Loading', {
     datause <- dfsub[,grep(options$choose, colnames(dfsub))]
     pal <- colorBin("Blues", datause, bins=quantile(datause, na.rm=T), na.color="#B0171F")
     lab <- switch(options$choose, 'age_k4ent'='Age Entropy', 'race_k4ent'='Race Entropy', 'educ_k5ent'='Education Entropy', 'inc_k5ent'='Income Entropy', 'resage_ent'='Dwelling Unit Age Entropy', 'LU_k5ent'='Land Use Entropy', 'htk4_ent'='Dwelling Unit Type Entropy')
@@ -128,6 +131,7 @@ shinyServer(function(input, output) {
       addPolygons(data=sub, stroke=T, weight=1.1, fillColor = ~pal(datause), color="black", fillOpacity=0.5, 
                   opacity=1, popup=~NAME10) %>%
       addLegend("bottomleft", pal=pal, values=datause, opacity=0.75, title=lab, na.label="Insufficient Data")
+    })
   })
   output$myMap2 = renderLeaflet(finalMap2())
   
