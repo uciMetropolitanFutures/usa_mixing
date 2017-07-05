@@ -3,75 +3,44 @@ library(leaflet)
 library(sp)
 library(maptools)
 
-coords <- read.csv("city_coords.csv")
-n1_7county_area = c(' ', 'Acton', 'Adelanto', 'Agoura Hills', 'Agua Dulce', 'Aguanga', 'Alhambra', 'Aliso Viejo', 'Alondra Park', 'Alpine', 'Altadena', 'Anaheim', 'Anza', 'Apple Valley', 'Arcadia', 'Artesia', 'Avalon', 'Avocado Heights', 'Azusa', 'Baker', 'Baldwin Park', 'Banning', 'Barstow', 'Beaumont', 'Bell', 'Bell Canyon', 'Bell Gardens', 'Bellflower', 'Bermuda Dunes', 'Beverly Hills', 'Big Bear City', 'Big Bear Lake', 'Big River', 'Bloomington', 'Bluewater', 'Blythe', 'Bombay Beach', 'Bonita', 'Bonsall', 'Borrego Springs', 'Bostonia', 'Boulevard', 'Bradbury', 'Brawley', 'Brea', 'Buena Park', 'Burbank', 'Cabazon', 'Calabasas', 'Calexico', 'Calimesa', 'Calipatria', 'Camarillo', 'Camp Pendleton North', 'Camp Pendleton South', 'Campo', 'Canyon Lake', 'Carlsbad', 'Carson', 'Casa Conejo', 'Casa de Oro-Mount Helix', 'Castaic', 'Cathedral City', 'Cerritos', 'Channel Islands Beach', 'Charter Oak', 'Cherry Valley', 'Chino', 'Chino Hills', 'Chula Vista', 'Citrus', 'Claremont', 'Coachella', 'Colton', 'Commerce', 'Compton', 'Corona', 'Coronado', 'Coronita', 'Costa Mesa', 'Coto de Caza', 'Covina', 'Crest', 'Crestline', 'Crestmore Heights', 'Cudahy', 'Culver City', 'Cypress', 'Dana Point', 'Del Aire', 'Del Mar', 'Descanso', 'Desert Center', 'Desert Edge', 'Desert Hot Springs', 'Desert Palms', 'Desert Shores', 'Desert View Highlands', 'Diamond Bar', 'Downey', 'Duarte', 'East Hemet', 'East La Mirada', 'East Los Angeles', 'East Pasadena', 'East Rancho Dominguez', 'East San Gabriel', 'Eastvale', 'El Cajon', 'El Centro', 'El Cerrito', 'El Monte', 'El Rio', 'El Segundo', 'El Sobrante', 'Elizabeth Lake', 'Encinitas', 'Escondido', 'Eucalyptus Hills', 'Fairbanks Ranch', 'Fallbrook', 'Fillmore', 'Florence-Graham', 'Fontana', 'Fort Irwin', 'Fountain Valley', 'French Valley', 'Fullerton', 'Garden Grove', 'Gardena', 'Garnet', 'Glen Avon', 'Glendale', 'Glendora', 'Good Hope', 'Grand Terrace', 'Granite Hills', 'Green Acres', 'Green Valley', 'Hacienda Heights', 'Harbison Canyon', 'Hasley Canyon', 'Hawaiian Gardens', 'Hawthorne', 'Heber', 'Hemet', 'Hermosa Beach', 'Hesperia', 'Hidden Hills', 'Hidden Meadows', 'Highgrove', 'Highland', 'Holtville', 'Home Gardens', 'Homeland', 'Homestead Valley', 'Huntington Beach', 'Huntington Park', 'Idyllwild-Pine Cove', 'Imperial', 'Imperial Beach', 'Indian Wells', 'Indio', 'Indio Hills', 'Industry', 'Inglewood', 'Irvine', 'Irwindale', 'Jacumba', 'Jamul', 'Joshua Tree', 'Julian', 'La Ca??ada Flintridge', 'La Crescenta-Montrose', 'La Habra', 'La Habra Heights', 'La Mesa', 'La Mirada', 'La Palma', 'La Presa', 'La Puente', 'La Quinta', 'La Verne', 'Ladera Heights', 'Ladera Ranch', 'Laguna Beach', 'Laguna Hills', 'Laguna Niguel', 'Laguna Woods', 'Lake Arrowhead', 'Lake Elsinore', 'Lake Forest', 'Lake Hughes', 'Lake Los Angeles', 'Lake Mathews', 'Lake Riverside', 'Lake San Marcos', 'Lake Sherwood', 'Lakeland Village', 'Lakeside', 'Lakeview', 'Lakewood', 'Lancaster', 'Las Flores', 'Lawndale', 'Lemon Grove', 'Lennox', 'Lenwood', 'Leona Valley', 'Littlerock', 'Loma Linda', 'Lomita', 'Long Beach', 'Los Alamitos', 'Los Angeles', 'Lucerne Valley', 'Lynwood', 'Lytle Creek', 'Malibu', 'Manhattan Beach', 'March ARB', 'Marina del Rey', 'Mayflower Village', 'Maywood', 'Mead Valley', 'Meadowbrook', 'Mecca', 'Meiners Oaks', 'Menifee', 'Mentone', 'Mesa Verde', 'Midway City', 'Mira Loma')
-n2_7county_area = c('Mira Monte', 'Mission Viejo', 'Monrovia', 'Montclair', 'Montebello', 'Monterey Park', 'Moorpark', 'Moreno Valley', 'Morongo Valley', 'Mount Laguna', 'Mountain Center', 'Mountain View Acres', 'Murrieta', 'Muscoy', 'National City', 'Needles', 'Newport Beach', 'Niland', 'Norco', 'North El Monte', 'North Shore', 'North Tustin', 'Norwalk', 'Nuevo', 'Oak Glen', 'Oak Hills', 'Oak Park', 'Oak View', 'Oasis', 'Oceanside', 'Ocotillo', 'Ojai', 'Ontario', 'Orange', 'Oxnard', 'Palm Desert', 'Palm Springs', 'Palmdale', 'Palo Verde', 'Palos Verdes Estates', 'Paramount', 'Pasadena', 'Pedley', 'Perris', 'Phelan', 'Pi??on Hills', 'Pico Rivera', 'Pine Valley', 'Piru', 'Placentia', 'Pomona', 'Port Hueneme', 'Potrero', 'Poway', 'Quartz Hill', 'Rainbow', 'Ramona', 'Rancho Cucamonga', 'Rancho Mirage', 'Rancho Palos Verdes', 'Rancho San Diego', 'Rancho Santa Fe', 'Rancho Santa Margarita', 'Redlands', 'Redondo Beach', 'Rialto', 'Ripley', 'Riverside', 'Rolling Hills', 'Rolling Hills Estates', 'Romoland', 'Rose Hills', 'Rosemead', 'Rossmoor', 'Rowland Heights', 'Rubidoux', 'Running Springs', 'Salton City', 'Salton Sea Beach', 'San Antonio Heights', 'San Bernardino', 'San Buenaventura (Ventura)', 'San Clemente', 'San Diego', 'San Diego Country Estates', 'San Dimas', 'San Fernando', 'San Gabriel', 'San Jacinto', 'San Juan Capistrano', 'San Marcos', 'San Marino', 'San Pasqual', 'Santa Ana', 'Santa Clarita', 'Santa Fe Springs', 'Santa Monica', 'Santa Paula', 'Santa Rosa Valley', 'Santa Susana', 'Santee', 'Saticoy', 'Seal Beach', 'Searles Valley', 'Seeley', 'Sierra Madre', 'Signal Hill', 'Silver Lakes', 'Simi Valley', 'Sky Valley', 'Solana Beach', 'South El Monte', 'South Gate', 'South Monrovia Island', 'South Pasadena', 'South San Gabriel', 'South San Jose Hills', 'South Whittier', 'Spring Valley', 'Spring Valley Lake', 'Stanton', 'Stevenson Ranch', 'Sun Village', 'Sunnyslope', 'Sunset Beach', 'Temecula', 'Temescal Valley', 'Temple City', 'Thermal', 'Thousand Oaks', 'Thousand Palms', 'Topanga', 'Torrance', 'Tustin', 'Twentynine Palms', 'Upland', 'Val Verde', 'Valinda', 'Valle Vista', 'Valley Center', 'Vernon', 'Victorville', 'View Park-Windsor Hills', 'Villa Park', 'Vincent', 'Vista', 'Vista Santa Rosa', 'Walnut', 'Walnut Park', 'Warm Springs', 'West Athens', 'West Carson', 'West Covina', 'West Hollywood', 'West Puente Valley', 'West Rancho Dominguez', 'West Whittier-Los Nietos', 'Westlake Village', 'Westminster', 'Westmont', 'Westmorland', 'Whitewater', 'Whittier', 'Wildomar', 'Willowbrook', 'Winchester', 'Winter Gardens', 'Winterhaven', 'Woodcrest', 'Wrightwood', 'Yorba Linda', 'Yucaipa', 'Yucca Valley')
-names = c(' ', 'Agoura Hills', 'Alhambra', 'Aliso Viejo', 'Alondra Park', 'Altadena', 'Anaheim', 'Arcadia', 'Artesia', 'Avalon', 'Avocado Heights', 'Azusa', 'Baldwin Park', 'Banning', 'Beaumont', 'Bell', 'Bell Canyon', 'Bell Gardens', 'Bellflower', 'Beverly Hills', 'Bloomington', 'Bradbury', 'Brea', 'Buena Park', 'Burbank', 'Calabasas', 'Calimesa', 'Camarillo', 'Canyon Lake', 'Carson', 'Casa Conejo', 'Castaic', 'Cerritos', 'Channel Islands Beach', 'Charter Oak', 'Cherry Valley', 'Chino', 'Chino Hills', 'Citrus', 'Claremont', 'Colton', 'Commerce', 'Compton', 'Corona', 'Coronita', 'Costa Mesa', 'Coto de Caza', 'Covina', 'Crestline', 'Crestmore Heights', 'Cudahy', 'Culver City', 'Cypress', 'Dana Point', 'Del Aire', 'Diamond Bar', 'Downey', 'Duarte', 'East Hemet', 'East La Mirada', 'East Los Angeles', 'East Pasadena', 'East Rancho Dominguez', 'East San Gabriel', 'Eastvale', 'El Cerrito', 'El Monte', 'El Rio', 'El Segundo', 'El Sobrante', 'Fillmore', 'Florence-Graham', 'Fontana', 'Fountain Valley', 'French Valley', 'Fullerton', 'Garden Grove', 'Gardena', 'Glen Avon', 'Glendale', 'Glendora', 'Good Hope', 'Grand Terrace', 'Green Acres', 'Hacienda Heights', 'Hasley Canyon', 'Hawaiian Gardens', 'Hawthorne', 'Hemet', 'Hermosa Beach', 'Hidden Hills', 'Highgrove', 'Highland', 'Home Gardens', 'Homeland', 'Huntington Beach', 'Huntington Park', 'Industry', 'Inglewood', 'Irvine', 'Irwindale', 'La Ca??????ada Flintridge', 'La Crescenta-Montrose', 'La Habra', 'La Habra Heights', 'La Mirada', 'La Palma', 'La Puente', 'La Verne', 'Ladera Heights', 'Ladera Ranch', 'Laguna Beach', 'Laguna Hills', 'Laguna Niguel', 'Laguna Woods', 'Lake Arrowhead', 'Lake Elsinore', 'Lake Forest', 'Lake Mathews', 'Lake Sherwood', 'Lakeland Village', 'Lakeview', 'Lakewood', 'Las Flores', 'Lawndale', 'Lennox', 'Loma Linda', 'Lomita', 'Long Beach', 'Los Alamitos', 'Los Angeles', 'Lynwood', 'Malibu', 'Manhattan Beach', 'March ARB', 'Marina del Rey', 'Mayflower Village', 'Maywood', 'Mead Valley', 'Meadowbrook', 'Meiners Oaks', 'Menifee', 'Mentone', 'Midway City', 'Mira Loma', 'Mira Monte', 'Mission Viejo', 'Monrovia', 'Montclair', 'Montebello', 'Monterey Park', 'Moorpark', 'Moreno Valley', 'Murrieta', 'Muscoy', 'Newport Beach', 'Norco', 'North El Monte', 'North Tustin', 'Norwalk', 'Nuevo', 'Oak Park', 'Oak View', 'Ojai', 'Ontario', 'Orange', 'Oxnard', 'Palos Verdes Estates', 'Paramount', 'Pasadena', 'Pedley', 'Perris', 'Pico Rivera', 'Placentia', 'Pomona', 'Port Hueneme', 'Rancho Cucamonga', 'Rancho Palos Verdes', 'Rancho Santa Margarita', 'Redlands', 'Redondo Beach', 'Rialto', 'Riverside', 'Rolling Hills', 'Rolling Hills Estates', 'Romoland', 'Rose Hills', 'Rosemead', 'Rossmoor', 'Rowland Heights', 'Rubidoux', 'San Antonio Heights', 'San Bernardino', 'San Buenaventura (Ventura)', 'San Clemente', 'San Dimas', 'San Fernando', 'San Gabriel', 'San Jacinto', 'San Juan Capistrano', 'San Marino', 'San Pasqual', 'Santa Ana', 'Santa Clarita', 'Santa Fe Springs', 'Santa Monica', 'Santa Paula', 'Santa Rosa Valley', 'Santa Susana', 'Saticoy', 'Seal Beach', 'Sierra Madre', 'Signal Hill', 'Simi Valley', 'South El Monte', 'South Gate', 'South Monrovia Island', 'South Pasadena', 'South San Gabriel', 'South San Jose Hills', 'South Whittier', 'Stanton', 'Stevenson Ranch', 'Sunnyslope', 'Sunset Beach', 'Temecula', 'Temescal Valley', 'Temple City', 'Thousand Oaks', 'Topanga', 'Torrance', 'Tustin', 'Upland', 'Val Verde', 'Valinda', 'Valle Vista', 'Vernon', 'View Park-Windsor Hills', 'Villa Park', 'Vincent', 'Walnut', 'Walnut Park', 'Warm Springs', 'West Athens', 'West Carson', 'West Covina', 'West Hollywood', 'West Puente Valley', 'West Rancho Dominguez', 'West Whittier-Los Nietos', 'Westlake Village', 'Westminster', 'Westmont', 'Whittier', 'Wildomar', 'Willowbrook', 'Winchester', 'Woodcrest', 'Yorba Linda', 'Yucaipa') 
+sub <- readShapePoly("ACS_2015_5YR_MSA_M1")
+dfsub <- data.frame(sub)
+names = as.character(unique(unlist(dfsub$NAME)))
 
 shinyUI(
   
-  navbarPage("MFI Webmap: Southern California Cities", id="nav",
-  
-  tabPanel("Industries & Employment", div(class="outer",
-                                                               
-                                                               tags$head(
-                                                                 includeCSS("styles.css")
-                                                                 ),
-                                                               
-                                                               leafletOutput("myMap", width="100%", height="100%"),
-                                                               
-                                                               absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
-                                                                             draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto", width = 330, height = "auto",
-                                                                             
-                                                                             selectInput("cent", label=strong("Zoom to City:"), selected="Irvine", choices=names),
-                                                                             
-                                                                             actionButton("recenter", label="Re-center Map"),
-                                                                             br(""),
-                                                                             radioButtons("year", label=strong("Select Timeframe: "), choices=list("1997", "2014"), selected="2014", inline=T),
-                                                                             radioButtons("cstopic", label=strong("Select Topic: "), choices=list("Employment", "Specialization"), selected="Employment", inline=T),
-                                                                             selectInput("cstype", label=strong("Select Category: "), selected="Total",
-                                                                                         choices = list("", "High Tech", "KIBS", "Creative Class", "Retail", "Industrial", "Total", "Highest Category")),
-                                                                              
-                                                                             actionButton("csgo", label="Click to Refresh After Changing Selection"),
-                                                                             br(""),
-                                                                             selectInput("city", label=strong("Select City to Display Below: "), selected=" ", choices = names),
-                                                                             
-                                                                             # Generate Histogram
-                                                                             plotOutput("hist", height = 225),
-                                                                             h6(em("by the ", a("Metropolitan Futures Initiative", href="http://mfi.soceco.uci.edu", target="_blank"), "at UC-Irvine (2016).  Webmap by ", a("Kevin Kane, PhD", href="http://kevinkane.org", target="_blank"), "and", a("UCI Data Science Initiative", href="http://datascience.uci.edu", target="_blank")))
-                                                               ),
-                                                               absolutePanel(id = "controls", class="panel panel-default", fixed = TRUE,
-                                                                             draggable=TRUE, top=110, left=10, right="auto", bottom="auto",
-                                                                             width=160, height="auto",
-                                                                             p("Data Notes:"),
-                                                                             h6("-- Please be patient while the map loads! Allow 20-30 sec."),
-                                                                             h6("-- Please click to refresh after making new selections to ensure correct map and legend are displayed, and to clear any error messages."),
-                                                                             h6(textOutput("var_desc")),
-                                                                             h6(textOutput("var_desc2")),
-                                                                             h6("-- See", a("our website", href="http://mfi.soceco.uci.edu", target="_blank"), "for details.")
-                                                               )
-)),
-
-tabPanel("Mixing", div(class="outer",
-                       tags$head(includeCSS("styles.css")),   # custom, taken from Shiny's "superZIP"                 
-                       leafletOutput("myMap2", width="100%", height="100%"),
-                       absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE, draggable = TRUE, top = 60, left = "auto", 
-                                     right = 20, bottom = "auto",  width = 330, height = "auto",
-                                     selectInput("cent2", label=strong("Zoom to City:"), selected="Irvine", choices=names),
-                                     actionButton("recenter2", label="Re-center Map"),
-                                     br(),
-                                     selectInput("mix", label=strong("Select Mixing Type:"), choices=list("Age", "Race", "Education", "Income", "Dwelling Unit Age", "Dwelling Unit Type", "Land Use"), selected="Age"),
-                                     actionButton("mixgo", label="Go/Refresh"),
-                                     br(),
-                                     p(em("Data Notes (see ", a("full report", href="http://mfi.soceco.uci.edu/category/quarterly-report/", target="_blank"), "for detail):")),
-                                     h6(textOutput("mix_desc")),
-                                     br(),
-                                     selectInput("city2", label=strong("Select City to Display Below: "), selected=" ", choices=names),
-                                     plotOutput("hist2", height=225),
-                                     h6(em("by the ", a("Metropolitan Futures Initiative", href="http://mfi.soceco.uci.edu", target="_blank"), "at UC-Irvine (2016).  Webmap by ", a("Kevin Kane, PhD", href="http://kevinkane.org", target="_blank"), "and", a("UCI Data Science Initiative", href="http://datascience.uci.edu", target="_blank")))
-                                     )
-                                     
-                       )
-)))
-
-
+  navbarPage("Mixing in Neighborhoods - part of the New Urban Crisis?", id="nav",
+             
+             tabPanel("TAB PANEL", div(class="outer",
+                                                     
+                                                     tags$head(
+                                                       includeCSS("styles.css")
+                                                     ),
+                                                     
+                                                     leafletOutput("myMap", width="100%", height="100%"),
+                                                     
+                                                     absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE,
+                                                                   draggable = TRUE, top = 60, left = "auto", right = 20, bottom = "auto", width = 330, height = "auto",
+                                                                   radioButtons("year", label=strong("Select Timeframe: "), choices=list("2010", "2015", "Change"), selected="2015", inline=T),
+                                                                   radioButtons("cstopic", label=strong("Select Topic: "), choices=list("Income", "Age", "Education", "Occupation"), selected="Income", inline=T),
+                                                                   actionButton("csgo", label="Click to Refresh After Changing Selection"),
+                                                                   br(""),
+                                                                   selectInput("msa", label=strong("Select Metro Area to Display Below: "), selected=" ", choices = names),
+                                                                   
+                                                                   # Top Five
+                                                                   textOutput("tablelabel"),
+                                                                   tableOutput("topfive"),
+                                                                   # Generate Histogram
+                                                                   plotOutput("hist", height = 225),
+                                                                   h6(em("by the ", a("Metropolitan Futures Initiative", href="http://mfi.soceco.uci.edu", target="_blank"), "at UC-Irvine (2016).  Webmap by ", a("Kevin Kane, PhD", href="http://kevinkane.org", target="_blank"), "and", a("UCI Data Science Initiative", href="http://datascience.uci.edu", target="_blank")))
+                                                     ),
+                                                     absolutePanel(id = "controls", class="panel panel-default", fixed = TRUE,
+                                                                   draggable=TRUE, top=110, left=10, right="auto", bottom="auto",
+                                                                   width=160, height="auto",
+                                                                   p("Data Notes:"),
+                                                                   h6("-- Please be patient while the map loads! Allow 20-30 sec."),
+                                                                   h6("-- Please click to refresh after making new selections to ensure correct map and legend are displayed, and to clear any error messages."),
+                                                                   h6("-- See", a("our website", href="http://mfi.soceco.uci.edu", target="_blank"), "for details.")
+                                                     )
+             ))
+))
