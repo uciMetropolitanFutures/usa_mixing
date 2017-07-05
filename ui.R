@@ -1,6 +1,5 @@
 library(shiny)
 library(leaflet)
-library(sp)
 library(maptools)
 
 sub <- readShapePoly("ACS_2015_5YR_MSA_M1")
