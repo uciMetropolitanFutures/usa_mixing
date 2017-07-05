@@ -21,7 +21,7 @@ shinyServer(function(input, output) {
       choice = dfsub[,grep(options$choose, colnames(dfsub))]
       pal <- colorQuantile("Blues", choice, na.color="#B0171F", n=5)
       # Create map 
-      m = leaflet(sub) %>%  setView(lng=-117.7736, lat=33.67801 , zoom=4) %>% addProviderTiles(providers$CartoDB.Positron) %>%
+      m = leaflet(sub) %>%  setView(lng=-117.7736, lat=33.67801 , zoom=4) %>% addTiles() %>% # addProviderTiles(providers$CartoDB.Positron) %>%
         addPolygons(data=sub, stroke=T, weight=1.1, fillColor = ~pal(choice), color="black", fillOpacity=0.5, 
                     opacity=1, popup=~NAME) %>%
         addLegend("bottomleft", pal=pal, values=~choice, opacity=0.75,
