@@ -8,7 +8,7 @@ names = as.character(unique(unlist(dfsub$NAME)))
 
 shinyUI(
   
-  navbarPage("Mixing in Neighborhoods - part of the New Urban Crisis?", id="nav",
+  navbarPage("Mixing in Neighborhoods - part of the New Urban Crisis...?", id="nav",
              
              tabPanel("TAB PANEL", div(class="outer",
                                                      
